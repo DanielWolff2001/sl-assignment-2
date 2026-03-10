@@ -1,9 +1,8 @@
 # WI4630 Statistical Learning – Assignment 2
 
 This repository contains the code used for **Assignment 2** of the course *WI4630 Statistical Learning*.  
-The assignment consists of two main parts: implementing logistic regression and applying regularized logistic regression to image datasets.
 
-The report (PDF) contains the discussion of results and the code output. All code is also included in the appendix of the report.
+The report (PDF) contains the discussion of results and the code output. All code is available in this repository which will be linked to in the report.
 
 ---
 
@@ -62,6 +61,11 @@ Structure:
 Dataset used in Question 1 for binary classification of handwritten digits (0 vs 1).
 
 ---
+
+**data/cifar-10-batches-py**
+
+Dataset used in Question 2. Download link below:
+https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
 
 ## Requirements
 
