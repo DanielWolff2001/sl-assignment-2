@@ -8,12 +8,14 @@ The report (PDF) contains the discussion of results and the code output. All cod
 ---
 
 ## Repository Structure
+```
 .
 ├── A2_logistic_regression_simulation.py
 ├── A2_logistic_regression_mnist.py
 ├── A2_cifar10.py
 ├── mnist.csv
 └── README.md
+```
 
 ### Files
 
