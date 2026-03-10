@@ -1,5 +1,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt
+import sklearn as sk
 
 def unpickle(file):
     import pickle
@@ -32,5 +33,5 @@ def plot_image(image, title=""):
     plt.show()
 
 # as a verification that everything is working correctly, plot an image
-image_nr = 320
-plot_image(X_train[image_nr,:],label_names[y_train[image_nr]])
+# image_nr = 320
+# plot_image(X_train[image_nr,:],label_names[y_train[image_nr]])
