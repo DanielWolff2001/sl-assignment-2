@@ -1,6 +1,9 @@
 import numpy as np 
 import matplotlib.pyplot as plt
-import sklearn as sk
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+import time
+
 
 def unpickle(file):
     import pickle
@@ -35,3 +38,26 @@ def plot_image(image, title=""):
 # as a verification that everything is working correctly, plot an image
 # image_nr = 320
 # plot_image(X_train[image_nr,:],label_names[y_train[image_nr]])
+
+# large C means "Trust this training data a lot"
+# small C says "This data may not be fully representative of the real world data"
+C_values = [0.001, 0.01, 0.1, 1, 10]
+
+for C in C_values:
+
+    start = time.time()
+
+    model = LogisticRegression(C=C, max_iter=200, solver= 'sag')
+    model.fit(X_train, y_train)
+
+    end = time.time()
+
+    y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)
+    acc = accuracy_score(y_test, y_pred)
+
+    print("C =", C)
+    print("Accuracy =", acc)
+    print("Training time =", round(end - start, 2), "seconds")
+    print()
+
