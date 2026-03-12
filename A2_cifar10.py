@@ -39,15 +39,24 @@ def plot_image(image, title=""):
 # image_nr = 320
 # plot_image(X_train[image_nr,:],label_names[y_train[image_nr]])
 
-# large C means "Trust this training data a lot"
-# small C says "This data may not be fully representative of the real world data"
-C_values = [0.001, 0.01, 0.1, 1, 10]
+# large C means "Trust this training data a lot", overfitting
+# small C says "This data may not be fully representative of the real world data", underfitting
+# C_values = [0.001, 0.01, 0.1, 1, 10]
+C_values = np.logspace(-3, 0, 8)
+
+
+# Normalize the data to help with convergence.
+X_test = X_test / 255
+X_train = X_train / 255
+
+train_times = []
+test_accuracies = []
 
 for C in C_values:
 
     start = time.time()
 
-    model = LogisticRegression(C=C, max_iter=200, solver= 'sag')
+    model = LogisticRegression(C=C, max_iter=500, solver= 'lbfgs')
     model.fit(X_train, y_train)
 
     end = time.time()
@@ -56,10 +65,56 @@ for C in C_values:
     y_prob = model.predict_proba(X_test)
     acc = accuracy_score(y_test, y_pred)
 
+    train_times.append(end - start)
+    test_accuracies.append(acc)
+
     print("C =", C)
     print("Accuracy =", acc)
     print("Training time =", round(end - start, 2), "seconds")
     print()
 
+plt.figure()
+
+plt.semilogx(C_values, test_accuracies, marker='o')
+plt.xlabel("Regularization parameter C")
+plt.ylabel("Test Accuracy")
+plt.title("Test Accuracy vs Regularization")
+plt.grid(True)
+
+plt.show()
+
+plt.figure()
+
+plt.semilogx(C_values, train_times, marker='o')
+plt.xlabel("Regularization parameter C")
+plt.ylabel("Training time (seconds)")
+plt.title("Training Time vs Regularization")
+plt.grid(True)
+
+plt.show()
+
+max_probs = np.max(y_prob, axis=1)
+
+
+# Results solver sag and iter 200, C_values = [0.001, 0.01, 0.1, 1, 10]
 # C = 0.001 did not converge within 200 iterations. Took 841.88 seconds and achieved an accuracy of 0.3841.
 # C = 0.01 did not converge within 200 iterations. Took 863.7 seconds and achieved an accuracy of 0.3841.
+# C = 0.1 did not converge within 200 iterations. Took 876.18 seconds and achieved an accuracy of 0.3839.
+# C = 1 did not converge within 200 iterations. Took 884.16 seconds and achieved an accuracy of 0.384.
+# C = 10 did not converge within 200 iterations. Took 942.96 seconds and achieved an accuracy of 0.3844.
+
+# Results solver lbfgs and iter 500, C_values = [0.001, 0.01, 0.1, 1, 10]
+# C = 0.001 did not converge within 500 iterations. Took 166.43 seconds and achieved an accuracy of 0.3896.
+# C = 0.01 did not converge within 500 iterations. Took 168.16 seconds and achieved an accuracy of 0.3878.
+# C = 0.1 did not converge within 500 iterations. Took 2035.78 seconds and achieved an accuracy of 0.3888.
+# C = 1 did not converge within 500 iterations. Took 925.36 seconds and achieved an accuracy of 0.3927.
+# C = 10 did not converge within 500 iterations. Took 170.28 seconds and achieved an accuracy of 0.3893.
+
+# Results normalized data, solver lbfgs and iter 500, C_values = [0.001, 0.01, 0.1, 1]
+# C = 0.001 converged within 500 iterations. Took 108.18 seconds and achieved an accuracy of 0.4047.
+# C = 0.01 converged within 500 iterations. Took 138.55 seconds and achieved an accuracy of 0.4176.
+# C = 0.1 did not converge within 500 iterations. Took 160.44 seconds and achieved an accuracy of 0.4068.
+# C = 1 did not converge within 500 iterations. Took 175.94 seconds and achieved an accuracy of 0.3926.
+
+# Results normalized data, solver lbfgs and iter 500, C_values = logspace(-3, 0, 8)
+# See figures plotted. 
