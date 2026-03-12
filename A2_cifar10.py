@@ -61,3 +61,5 @@ for C in C_values:
     print("Training time =", round(end - start, 2), "seconds")
     print()
 
+# C = 0.001 did not converge within 200 iterations. Took 841.88 seconds and achieved an accuracy of 0.3841.
+# C = 0.01 did not converge within 200 iterations. Took 863.7 seconds and achieved an accuracy of 0.3841.
