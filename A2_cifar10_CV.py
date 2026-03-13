@@ -53,3 +53,5 @@ plt.grid(True, which="both", ls="-")
 plt.show()
 
 print(f"Best C found: {cv_model.C_[0]}")
+
+# no convergence across all C values..

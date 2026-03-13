@@ -117,4 +117,4 @@ max_probs = np.max(y_prob, axis=1)
 # C = 1 did not converge within 500 iterations. Took 175.94 seconds and achieved an accuracy of 0.3926.
 
 # Results normalized data, solver lbfgs and iter 500, C_values = logspace(-3, 0, 8)
-# See figures plotted. 
+# See figures plotted. We take the largest accuracy, given that the solver converged, which is C = 0.0071968567300115215, so we take C = 0.007.
