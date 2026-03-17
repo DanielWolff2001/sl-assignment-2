@@ -28,6 +28,11 @@ X_test = test["data"]
 y_test = test["labels"]
 
 
+# Normalize the data to help with convergence.
+X_test = X_test / 255
+X_train = X_train / 255
+
+
 # Define a range of regularization parameters (C is the inverse of regularization strength)
 # We use a logarithmic scale from 10^-4 to 10^1
 Cs = np.logspace(-4, 1, 10)
