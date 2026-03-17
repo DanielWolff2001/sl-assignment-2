@@ -33,7 +33,7 @@ y_test = test["labels"]
 Cs = np.logspace(-4, 1, 10)
 
 # Initialize LogisticRegressionCV with 4-fold cross-validation
-# multi_class='multinomial' is used for CIFAR-10, and 'lbfgs' is a fast solver for large datasets
+# 'lbfgs' is a fast solver for large datasets
 cv_model = LogisticRegressionCV(Cs=Cs, cv=4, solver='lbfgs', max_iter=500, n_jobs=-1)
 
 print("Starting Cross-Validation...")
