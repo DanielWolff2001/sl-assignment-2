@@ -1,10 +1,15 @@
-from sklearn.linear_model import LogisticRegressionCV
-import numpy as np 
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-import time
+# A LLM was used for enhancing visualisation of results.
 
+# The visualisation of CV results is also improved with:
+# - Plotting mean CV accuracy vs C with a vertical line at the best C
+# - A summary of CV results including best C, what it means, mean CV accuracy, and test set accuracy
+# - A classification report showing per-class precision, recall, and F1 scores on the test set 
+
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.metrics import accuracy_score, classification_report
+import numpy as np
+import matplotlib.pyplot as plt
+import warnings
 
 def unpickle(file):
     import pickle
@@ -17,46 +22,76 @@ dict2 = unpickle("./data/cifar-10-batches-py/data_batch_2")
 dict3 = unpickle("./data/cifar-10-batches-py/data_batch_3")
 dict4 = unpickle("./data/cifar-10-batches-py/data_batch_4")
 dict5 = unpickle("./data/cifar-10-batches-py/data_batch_5")
-test = unpickle("./data/cifar-10-batches-py/test_batch")
-meta_data = unpickle("./data/cifar-10-batches-py/batches.meta")
+test  = unpickle("./data/cifar-10-batches-py/test_batch")
+meta_data  = unpickle("./data/cifar-10-batches-py/batches.meta")
 label_names = meta_data["label_names"]
 
+X_train = np.concatenate([d["data"] for d in [dict1,dict2,dict3,dict4,dict5]]) / 255.0
+y_train = np.concatenate([d["labels"] for d in [dict1,dict2,dict3,dict4,dict5]])
+X_test  = test["data"] / 255.0
+y_test  = np.array(test["labels"])
 
-X_train = np.concatenate((dict1["data"],dict2["data"],dict3["data"],dict4["data"],dict5["data"]))
-y_train = np.concatenate((dict1["labels"],dict2["labels"],dict3["labels"],dict4["labels"],dict5["labels"]))
-X_test = test["data"]
-y_test = test["labels"]
-
-
-# Normalize the data to help with convergence.
-X_test = X_test / 255
-X_train = X_train / 255
-
-
-# Define a range of regularization parameters (C is the inverse of regularization strength)
-# We use a logarithmic scale from 10^-4 to 10^1
+# Log scale from 1e-4 to 1e1 — 10 candidates
 Cs = np.logspace(-4, 1, 10)
 
-# Initialize LogisticRegressionCV with 4-fold cross-validation
-# 'lbfgs' is a fast solver for large datasets
-cv_model = LogisticRegressionCV(Cs=Cs, cv=4, solver='lbfgs', max_iter=500, n_jobs=-1)
 
-print("Starting Cross-Validation...")
-cv_model.fit(X_train, y_train)
+cv_model = LogisticRegressionCV(
+    Cs=Cs,
+    cv=4,
+    solver='saga',        
+    max_iter=2000,        
+    refit=True,
+    scoring='accuracy',
+    n_jobs=-1,
+    random_state=42,
+    verbose=1
+)
 
-# The scores_ attribute is a dict mapping each label to the grid of scores
-# We average the scores across all folds and all classes to get the mean accuracy per C
-mean_scores = np.mean([np.mean(scores, axis=0) for scores in cv_model.scores_.values()], axis=0)
+print("Starting 4-Fold Cross-Validation...")
+with warnings.catch_warnings(record=True) as w:
+    warnings.simplefilter("always")
+    cv_model.fit(X_train, y_train)
+    non_converged = [str(warning.message) for warning in w if "ConvergenceWarning" in str(warning.category)]
 
-# Make a log-log plot of the cross-validated accuracy score
+if non_converged:
+    print(f"\n⚠️  Convergence warnings for {len(non_converged)} fits — consider increasing max_iter further.")
+else:
+    print("\n✅ All fits converged successfully.")
+
+# Extract CV scores
+mean_scores = np.mean(
+    [scores.mean(axis=0) for scores in cv_model.scores_.values()],
+    axis=0
+)
+
+best_C       = cv_model.C_[0]  # best C found by CV
+best_cv_acc  = mean_scores[np.argmin(np.abs(Cs - best_C))]
+
+# Plot mean CV accuracy vs C
 plt.figure(figsize=(10, 6))
-plt.loglog(Cs, mean_scores, marker='o')
+plt.semilogx(Cs, mean_scores, marker='o', linewidth=2, label='Mean CV Accuracy')
+plt.axvline(best_C, color='red', linestyle='--', label=f'Best C = {best_C:.4f}')
+plt.scatter([best_C], [best_cv_acc], color='red', zorder=5)
 plt.xlabel('Regularization Parameter C (log scale)')
-plt.ylabel('Mean CV Accuracy (log scale)')
-plt.title('4-Fold Cross-Validation Accuracy vs Regularization Parameter')
-plt.grid(True, which="both", ls="-")
+plt.ylabel('Mean CV Accuracy')
+plt.title('4-Fold Cross-Validation Accuracy vs C')
+plt.legend()
+plt.grid(True, which="both", ls="--", alpha=0.5)
+plt.tight_layout()
 plt.show()
 
-print(f"Best C found: {cv_model.C_[0]}")
+# Results summary
+y_pred      = cv_model.predict(X_test)
+test_acc    = accuracy_score(y_test, y_pred)
 
-# no convergence across all C values..
+print("\n" + "="*55)
+print("         CROSS-VALIDATION RESULTS SUMMARY")
+print("="*55)
+print(f"  Best C found        : {best_C:.6f}")
+print(f"  What C means        : {'high regularization (simpler model)' if best_C < 0.1 else 'low regularization (complex model)'}")
+print(f"  Mean CV Accuracy    : {best_cv_acc:.4f}  ({best_cv_acc*100:.2f}%)")
+print(f"  Test Set Accuracy   : {test_acc:.4f}  ({test_acc*100:.2f}%)")
+print("="*55)
+
+print("\nPer-class breakdown on test set:")
+print(classification_report(y_test, y_pred, target_names=label_names))
