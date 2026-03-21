@@ -28,13 +28,18 @@ X_test = test["data"]
 y_test = test["labels"]
 
 
+# Normalize the data to help with convergence.
+X_test = X_test / 255
+X_train = X_train / 255
+
+
 # Define a range of regularization parameters (C is the inverse of regularization strength)
 # We use a logarithmic scale from 10^-4 to 10^1
 Cs = np.logspace(-4, 1, 10)
 
 # Initialize LogisticRegressionCV with 4-fold cross-validation
-# multi_class='multinomial' is used for CIFAR-10, and 'sag' is a fast solver for large datasets
-cv_model = LogisticRegressionCV(Cs=Cs, cv=4, penalty='l2', solver='sag', max_iter=200, verbose=1, n_jobs=-1)
+# 'lbfgs' is a fast solver for large datasets
+cv_model = LogisticRegressionCV(Cs=Cs, cv=4, solver='lbfgs', max_iter=500, n_jobs=-1)
 
 print("Starting Cross-Validation...")
 cv_model.fit(X_train, y_train)
@@ -53,3 +58,5 @@ plt.grid(True, which="both", ls="-")
 plt.show()
 
 print(f"Best C found: {cv_model.C_[0]}")
+
+# no convergence across all C values..
