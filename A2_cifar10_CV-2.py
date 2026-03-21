@@ -1,5 +1,3 @@
-# This code is written by Claude and is to test whether it is better at displaying results of CV.
-
 # Only real changes from A2-cifar10_CV.py is the following:
 # - solver='saga'  — much better convergence on high-dimensional data like CIFAR
 # - max_iter=2000  — give it enough room to converge at low-C (high regularization) values
@@ -46,8 +44,8 @@ Cs = np.logspace(-4, 1, 10)
 cv_model = LogisticRegressionCV(
     Cs=Cs,
     cv=4,
-    solver='saga',        # ← swap from lbfgs
-    max_iter=2000,        # ← increase from 500
+    solver='saga',        
+    max_iter=2000,        
     refit=True,
     scoring='accuracy',
     n_jobs=-1,
@@ -66,7 +64,7 @@ if non_converged:
 else:
     print("\n✅ All fits converged successfully.")
 
-# ── Extract CV scores ──────────────────────────────────────────────────────────
+# Extract CV scores
 # scores_ shape: {class: (n_folds, n_Cs)}  for multiclass OVR
 # We average over folds and classes to get one accuracy per C value
 mean_scores = np.mean(
@@ -90,7 +88,7 @@ plt.grid(True, which="both", ls="--", alpha=0.5)
 plt.tight_layout()
 plt.show()
 
-# ── Results summary ────────────────────────────────────────────────────────────
+# Results summary
 y_pred      = cv_model.predict(X_test)
 test_acc    = accuracy_score(y_test, y_pred)
 
