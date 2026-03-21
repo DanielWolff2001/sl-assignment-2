@@ -1,9 +1,12 @@
-# Only real changes from A2-cifar10_CV.py is the following:
-# - solver='saga'  — much better convergence on high-dimensional data like CIFAR
-# - max_iter=2000  — give it enough room to converge at low-C (high regularization) values
-# - refit=True     — after CV, automatically refit on full training set using best C
+"""
+@author: Daniel Wolff
 
-# The visualisation of CV results is also improved with:
+"""
+
+# Disclaimer: A LLM was used for enhancing visualisation of results.
+
+
+# The visualisation of CV results was improved with:
 # - Plotting mean CV accuracy vs C with a vertical line at the best C
 # - A summary of CV results including best C, what it means, mean CV accuracy, and test set accuracy
 # - A classification report showing per-class precision, recall, and F1 scores on the test set 
@@ -34,13 +37,10 @@ y_train = np.concatenate([d["labels"] for d in [dict1,dict2,dict3,dict4,dict5]])
 X_test  = test["data"] / 255.0
 y_test  = np.array(test["labels"])
 
-# Log scale from 1e-4 to 1e1 — 10 candidates is a good balance of coverage vs. speed
+# Log scale from 1e-4 to 1e1 — 10 candidates
 Cs = np.logspace(-4, 1, 10)
 
-# KEY FIXES:
-#   solver='saga'  — much better convergence on high-dimensional data like CIFAR
-#   max_iter=2000  — give it enough room to converge at low-C (high regularization) values
-#   refit=True     — after CV, automatically refit on full training set using best C
+
 cv_model = LogisticRegressionCV(
     Cs=Cs,
     cv=4,
@@ -53,7 +53,7 @@ cv_model = LogisticRegressionCV(
     verbose=1
 )
 
-print("Starting 4-Fold Cross-Validation (this may take a few minutes)...")
+print("Starting 4-Fold Cross-Validation...")
 with warnings.catch_warnings(record=True) as w:
     warnings.simplefilter("always")
     cv_model.fit(X_train, y_train)
@@ -65,8 +65,6 @@ else:
     print("\n✅ All fits converged successfully.")
 
 # Extract CV scores
-# scores_ shape: {class: (n_folds, n_Cs)}  for multiclass OVR
-# We average over folds and classes to get one accuracy per C value
 mean_scores = np.mean(
     [scores.mean(axis=0) for scores in cv_model.scores_.values()],
     axis=0
@@ -75,7 +73,7 @@ mean_scores = np.mean(
 best_C       = cv_model.C_[0]  # best C found by CV
 best_cv_acc  = mean_scores[np.argmin(np.abs(Cs - best_C))]
 
-# ── Plot ───────────────────────────────────────────────────────────────────────
+# Plot mean CV accuracy vs C
 plt.figure(figsize=(10, 6))
 plt.semilogx(Cs, mean_scores, marker='o', linewidth=2, label='Mean CV Accuracy')
 plt.axvline(best_C, color='red', linestyle='--', label=f'Best C = {best_C:.4f}')
