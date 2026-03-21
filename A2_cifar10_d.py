@@ -1,3 +1,16 @@
+"""
+@author: Daniel Wolff
+
+"""
+
+# Disclaimer: A LLM was used for enhancing visualisation of results.
+# Not run yet, but the code is structured to perform the following:
+# - Load CIFAR-10 data
+# - Perform accuracy-scored CV using LogisticRegressionCV to find the best C
+# - Perform log-loss CV using cross_val_predict to find the best C
+# - Plot both CV results on log-log plots for comparison
+# - Finally, compare the test set performance of the best models from both CV methods
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegressionCV, LogisticRegression
@@ -5,7 +18,7 @@ from sklearn.model_selection import cross_val_predict
 from sklearn import metrics
 import warnings
 
-# ── Data loading ───────────────────────────────────────────────────────────────
+# Data loading
 def unpickle(file):
     import pickle
     with open(file, 'rb') as fo:
@@ -21,7 +34,7 @@ X_test  = test["data"] / 255.0
 y_test  = np.array(test["labels"])
 
 
-# ── (c) Accuracy CV — reuse your existing LogisticRegressionCV result ──────────
+# (c) Accuracy CV — reuse existing LogisticRegressionCV result
 Cs = np.logspace(-4, 1, 10)
 
 print("Running accuracy-scored CV (c)...")
@@ -51,8 +64,6 @@ for C in Cs:
     model = LogisticRegression(
         C=C, solver='saga', max_iter=2000, random_state=42
     )
-
-    # cross_val_predict returns out-of-fold predicted probabilities
     # shape: (n_train_samples, n_classes)
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
@@ -61,8 +72,7 @@ for C in Cs:
             cv=4, method='predict_proba', n_jobs=-1
         )
 
-    # log_loss: lower is better, so we negate it to make higher = better
-    # (consistent with accuracy direction for comparison plots)
+    # log_loss: lower is better, so we negate it to make higher = better for comparison
     loss = metrics.log_loss(y_train, y_prob_oof)
     logloss_scores.append(loss)
     print(f"  C={C:.6f} | Log-loss={loss:.4f}")

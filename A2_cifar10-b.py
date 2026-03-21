@@ -1,3 +1,10 @@
+"""
+@author: Daniel Wolff
+
+"""
+
+# Disclaimer: A LLM was used for enhancing visualisation of results.
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec

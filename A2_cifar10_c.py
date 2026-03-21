@@ -1,6 +1,12 @@
-# A LLM was used for enhancing visualisation of results.
+"""
+@author: Daniel Wolff
 
-# The visualisation of CV results is also improved with:
+"""
+
+# Disclaimer: A LLM was used for enhancing visualisation of results.
+
+
+# The visualisation of CV results was improved with:
 # - Plotting mean CV accuracy vs C with a vertical line at the best C
 # - A summary of CV results including best C, what it means, mean CV accuracy, and test set accuracy
 # - A classification report showing per-class precision, recall, and F1 scores on the test set 
