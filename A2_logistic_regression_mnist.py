@@ -3,7 +3,7 @@
 """
 Created on Mon Sep 20 12:21:05 2021
 
-@author:  Your names and student numbers
+@author:  Jesse Vonk (5235960)
 """
 
 #import packages
@@ -12,10 +12,16 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 #read the csv file
 
-df = pd.read_csv(r'Enter the path where the csv file is stored')
+
+
+df = pd.read_csv(fr'{dir_path}\\mnist.csv')
 # Alternativelyyou can put the file in your working directory
 # If you load the csv file with another function make sure that the matrix of features X is defined as in the book
 # and the assignment and convert it to an numpy array
@@ -96,14 +102,36 @@ def prediction_accuracy(y_predicted,y_observed):
 p=x_train.shape[1]
 
 #Compute the ranks of the matrices X and X^T
+print(np.linalg.matrix_rank(x_train))
 
 
-
- 
-def logistic_regression_NR(features, target, num_steps, tolerance):
+def logistic_regression_NR(features, target, num_steps=100, tolerance=1e-6):
     beta = np.zeros(features.shape[1])
-      
-     
+
+    for step in range(num_steps):     
+        # Calculate probabilities p
+        # p is the vector with elements p(xi; beta_old) 
+        p = logistic(np.dot(features, beta))
+        
+        # compute gradient 
+        # Score = X^T * (y - p) (from hastie et al)
+        gradient = np.dot(features.T, target - p)
+        
+        # only update if gradient is large
+        if np.linalg.norm(gradient) > tolerance:
+            
+            # compute Hessian
+            # W is the diagonal matrix of weights p*(1-p) 
+            # Hessian = -X^T * W * X (Hestie et al)
+            W_diag = p * (1 - p)
+            hessian = -np.dot(features.T, features * W_diag[:, np.newaxis])
+            
+            # Update beta according to Newton-Raphson procedure
+            # beta_new = beta_old - (Hessian_inv * gradient) (from Hastie et al)
+            beta = beta - np.dot(np.linalg.inv(hessian), gradient)
+        else:
+            # If the gradient is smaller than tolerance, we have converged
+            break
           
     return beta
 
@@ -111,13 +139,44 @@ def logistic_regression_NR(features, target, num_steps, tolerance):
 lambda_0=1
 
 
-def logistic_regression_NR_penalized(features, target, num_steps, tolerance):
-    beta = np.zeros(features.shape[1])
+def logistic_regression_NR_penalized(features, target, lam, num_steps=100, tolerance=1e-6):
+    p_dim = features.shape[1]
+    beta = np.zeros(p_dim)
     
-    
+    for step in range(num_steps):     
+        # Calculate probabilities p
+        # p is the vector with elements p(xi; beta_old) 
+        p = logistic(np.dot(features, beta))
+        
+        # compute gradient 
+        # Score = X^T * (y - p) (from hastie et al)
+        gradient = -np.dot(features.T, target - p) + 2 * lam * beta
+        
+        # only update if gradient is large
+        if np.linalg.norm(gradient) > tolerance:
+            
+            # compute Hessian
+            # W is the diagonal matrix of weights p*(1-p) 
+            # Hessian = -X^T * W * X (Hestie et al)
+            W_diag = p * (1 - p)
+            hessian = np.dot(features.T, features * W_diag[:, np.newaxis]) + 2 * lam * np.eye(p_dim)
+            
+            # Update beta according to Newton-Raphson procedure
+            # beta_new = beta_old - (Hessian_inv * gradient) (from Hastie et al)
+            beta = beta - np.dot(np.linalg.inv(hessian), gradient)
+        else:
+            # If the gradient is smaller than tolerance, we have converged
+            break
            
           
     return beta
 
 
+if __name__ == '__main__':
+    betas = logistic_regression_NR_penalized(x_train, y_train, lambda_0)
+    
+    y_pred = logistic_forecast(x_test, betas)
+    test_acc = prediction_accuracy(y_pred, y_test)
+    print(test_acc)
+    
 
