@@ -178,5 +178,5 @@ if __name__ == '__main__':
     y_pred = logistic_forecast(x_test, betas)
     test_acc = prediction_accuracy(y_pred, y_test)
     print(test_acc)
-    print(betas)
+    
 
