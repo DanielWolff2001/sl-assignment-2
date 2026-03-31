@@ -3,7 +3,7 @@
 """
 Created on Mon Sep 20 12:21:05 2021
 
-@author:  Jesse Vonk (5235960)
+@author:  Jesse Vonk (5235960), Daniel Wolff (5013542), Willem van den Bos (5323924)
 """
 
 #import packages

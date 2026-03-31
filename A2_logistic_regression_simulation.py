@@ -60,7 +60,7 @@ def logistic_regression_NR(features, target, num_steps=100, tolerance=1e-6):
         
         # compute gradient 
         # Score = X^T * (y - p) (from hastie et al)
-        gradient = np.dot(features.T, target - p)
+        gradient = -np.dot(features.T, target - p)
         
         # only update if gradient is large
         if np.linalg.norm(gradient) > tolerance:
@@ -69,7 +69,7 @@ def logistic_regression_NR(features, target, num_steps=100, tolerance=1e-6):
             # W is the diagonal matrix of weights p*(1-p) 
             # Hessian = -X^T * W * X (Hestie et al)
             W_diag = p * (1 - p)
-            hessian = -np.dot(features.T, features * W_diag[:, np.newaxis])
+            hessian = np.dot(features.T, features * W_diag[:, np.newaxis])
             
             # Update beta according to Newton-Raphson procedure
             # beta_new = beta_old - (Hessian_inv * gradient) (from Hastie et al)
